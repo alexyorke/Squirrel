@@ -24,7 +24,7 @@ namespace Yonom.EE
         static string[] blocks;
 
         public static Dictionary<string, string> blockDict { get; private set; }
-
+        static string worldID = "PWUzNk3PZ4bkI";
         static void Main(string[] args)
         {
             // Load the blocks into memory
@@ -37,7 +37,7 @@ namespace Yonom.EE
             Console.WriteLine("Connected");
 
             stopwatch.Start();
-            conn.Multiplayer.JoinRoom("PWUzNk3PZ4bkI", null, delegate (Connection connection)
+            conn.Multiplayer.JoinRoom(worldID, null, delegate (Connection connection)
             {
                 connection.OnMessage += Connection_OnMessage;
                 globalConn = connection;
@@ -45,7 +45,7 @@ namespace Yonom.EE
 
             });
             
-            DatabaseObject obj = conn.BigDB.Load("Worlds", "PWUzNk3PZ4bkI");
+            DatabaseObject obj = conn.BigDB.Load("Worlds", worldID);
             FromDatabaseObject(obj);
             Thread.Sleep(Timeout.Infinite);
         }
@@ -100,6 +100,9 @@ namespace Yonom.EE
 
                 }
             }
+
+            // have to rewrite foreground blocks because they may have been written before
+            // the background blocks were.
 	        foreach (var element in rewrittenBlocks)
 	        {
                 fp.SetPixel(Convert.ToInt32(element.Item1), Convert.ToInt32(element.Item2), element.Item3);
@@ -108,7 +111,7 @@ namespace Yonom.EE
             Console.WriteLine("unlocked image");
             fp.Unlock(true);
             
-            bmp.Save("Image_initdata.png");
+            bmp.Save(worldID + "_bigdb.png");
             Console.WriteLine("Saved image");
         }
 
@@ -210,7 +213,7 @@ namespace Yonom.EE
                     }
 
                     fp.Unlock(true);
-                    bmp.Save("Image.png");
+                    bmp.Save(worldID+".png");
                     stopwatch.Stop();
 
                     Console.WriteLine("Elapsed: " + stopwatch.ElapsedMilliseconds);
