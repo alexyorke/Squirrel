@@ -96,7 +96,6 @@
     <None Include="App.config">
       <SubType>Designer</SubType>
     </None>
-    <None Include="InitParse_TemporaryKey.pfx" />
     <None Include="packages.config">
       <SubType>Designer</SubType>
     </None>
