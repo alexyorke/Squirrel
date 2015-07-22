@@ -82,9 +82,12 @@ namespace Decagon.EE
         /// <param name="height">The height of the world.</param>
         public static void UnserializeFromComplexObject(DatabaseArray worlddata,int width,int height)
         {
-            Bitmap bmp;
-            FastPixel fp;
-            InitializeBitmapWithColor(width, height, Color.Black, out bmp, out fp, true);
+
+            Minimap minimap = new Minimap();
+            minimap.width = width;
+            minimap.height = height;
+
+            minimap.initialize();
             
 
             List<Tuple<int, int, Color>> rewrittenBlocks = new List<Tuple<int, int, Color>>();
@@ -101,43 +104,18 @@ namespace Decagon.EE
                     var nx = (xs[b] << 8) + xs[b + 1];
                     var ny = (ys[b] << 8) + ys[b + 1];
 
-                    rewrittenBlocks.Add(drawBlock(fp, new DataChunk(layerNum, type, xs, ys, new object[0]), new Point(nx,ny)));
+                    // if it can't draw it, it will draw it later.
+                    rewrittenBlocks.Add(minimap.drawBlock(new DataChunk(layerNum, type, xs, ys, new object[0]), new Point(nx,ny)));
                 }
             }
 
             // have to rewrite foreground blocks because they may have been written before
             // the background blocks were.
 
-            rewriteForegroundBlocks(fp, rewrittenBlocks);
+            minimap.rewriteForegroundBlocks(rewrittenBlocks);
 
-            fp.Unlock(true);
-
-            bmp.Save(worldID + "_bigdb.png");
+            minimap.Save(worldID + "_bigdb.png");
             Console.WriteLine("Saved image");
-        }
-
-        /// <summary>
-        /// Initializes the color of a new bitmap.
-        /// </summary>
-        /// <param name="width">The width.</param>
-        /// <param name="height">The height.</param>
-        /// <param name="background">The background.</param>
-        /// <param name="bmp">The BMP reference.</param>
-        /// <param name="fp">The fast pixel reference.</param>
-        /// <param name="shouldLock">if set to <c>true</c> the image should be locked for editing.</param>
-        private static void InitializeBitmapWithColor(int width, int height, Color background, out Bitmap bmp, out FastPixel fp, bool shouldLock = true)
-        {
-            bmp = new Bitmap(width, height);
-            var gr = Graphics.FromImage(bmp);
-            gr.Clear(background); // empty blocks (null) are black
-            gr.DrawImage(bmp, new Rectangle(0, 0, bmp.Width, bmp.Height));
-
-            fp = new FastPixel(bmp);
-
-            if (shouldLock)
-            {
-                fp.Lock();
-            }
         }
 
         /// <summary>
@@ -152,65 +130,31 @@ namespace Decagon.EE
                 case "init":
                     globalConn.Disconnect(); // already have init data; don't need to be connected
 
-                    Bitmap bmp;
-                    FastPixel fp;
-                    InitializeBitmapWithColor(e.GetInt(15), e.GetInt(16), Color.Black, out bmp, out fp);
                     List<Tuple<int, int, Color>> rewrittenBlocks = new List<Tuple<int, int, Color>>();
 
+                    Minimap minimap = new Minimap();
+                    minimap.width = e.GetInt(15);
+                    minimap.height = e.GetInt(16);
+
+                    minimap.initialize();
                     var chunks = InitParse.Parse(e);
                     foreach (var chunk in chunks)
                     {
                         foreach (var pos in chunk.Locations)
-                        {
-                            rewrittenBlocks.Add(drawBlock(fp, chunk, pos));
+                        {  
+                            rewrittenBlocks.Add(
+                                minimap.drawBlock(chunk, pos));
                         }
                     }
 
-                    rewriteForegroundBlocks(fp, rewrittenBlocks);
+                    minimap.rewriteForegroundBlocks(rewrittenBlocks);
 
-                    fp.Unlock(true);
-                    bmp.Save(worldID + ".png");
-                    pngCompressor();
+                    minimap.Save(worldID + ".png");
+                    //pngCompressor();
 
-                    stopwatch.Stop();
-
-                    Console.WriteLine("Elapsed: " + stopwatch.ElapsedMilliseconds + "ms");
-                    Console.WriteLine("Wasted time: " + wasted_seconds.ElapsedMilliseconds + "ms");
                     break;
             }
-        }
-
-        private static void rewriteForegroundBlocks(FastPixel fp, List<Tuple<int, int, Color>> rewrittenBlocks)
-        {
-            wasted_seconds.Start();
-            foreach (var element in rewrittenBlocks)
-            {
-                if (element != null)
-                {
-                    fp.SetPixel(Convert.ToInt32(element.Item1), Convert.ToInt32(element.Item2), element.Item3);
-                }
-            }
-            wasted_seconds.Stop();
-        }
-
-        private static Tuple<int, int, Color> drawBlock(FastPixel fp, DataChunk chunk, Point pos)
-        {
-            Color c;
-            Tuple<int, int, Color> rewrittenBlock_local = null;
-
-            blockDict.TryGetValue(Convert.ToString(chunk.Type), out c);
-            if (chunk.Layer == 1)
-            {
-                // background block
-                rewrittenBlock_local = new Tuple<int,int,Color>(pos.X, pos.Y, Color.FromArgb(255, c.R, c.G, c.B));
-            }
-
-            fp.SetPixel(pos.X, pos.Y, Color.FromArgb(255, c.R, c.G, c.B));
-
-            
-            // workaround to get reference to a tuple
-            return rewrittenBlock_local;
-        }
+        }   
 
         /// <summary>
         /// Compresses PNG files.
