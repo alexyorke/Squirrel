@@ -6,9 +6,21 @@ using System.Linq;
 
 namespace Decagon.EE
 {
+    /// <summary>
+    /// The acorn class.
+    /// </summary>
     public class Acorn
     {
 
+        /// <summary>
+        /// Loads the blocks.
+        /// </summary>
+        /// <returns>Dictionary containing the blocks with their respective ids and colors.</returns>
+        /// <exception cref="InvalidDataException">
+        /// The blocks did not download correctly.
+        /// or
+        /// The blocks are not in the correct format.
+        /// </exception>
         public static Dictionary<string,Color> LoadBlocks()
         {
             // if the acorn file does not exist...
@@ -49,6 +61,11 @@ namespace Decagon.EE
             return blockDict;
         }
 
+        /// <summary>
+        /// Converts a UInt to a Color object.
+        /// </summary>
+        /// <param name="color">The color.</param>
+        /// <returns>Color object</returns>
         public static Color UIntToColor(uint color)
         {
             byte a = (byte)(color >> 24);

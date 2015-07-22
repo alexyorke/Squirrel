@@ -11,11 +11,26 @@ namespace Decagon.EE
     using System.Drawing.Imaging;
     class Program
     {
+        /// <summary>
+        /// The stopwatch
+        /// </summary>
         static Stopwatch stopwatch = new Stopwatch();
+        /// <summary>
+        /// The wasted_seconds
+        /// </summary>
         static Stopwatch wasted_seconds = new Stopwatch();
+        /// <summary>
+        /// The global connection
+        /// </summary>
         static Connection globalConn = null;
 
+        /// <summary>
+        /// The block dictionary
+        /// </summary>
         public static Dictionary<string, Color> blockDict = new Dictionary<string, Color>();
+        /// <summary>
+        /// The world identifier
+        /// </summary>
         static string worldID = "PW5WNPqd3ia0I";
 
         static void Main(string[] args)
@@ -44,6 +59,10 @@ namespace Decagon.EE
         }
 
 
+        /// <summary>
+        /// Extracts the world from the BigDB database.
+        /// </summary>
+        /// <param name="obj">The object.</param>
         public static void FromDatabaseObject(DatabaseObject obj)
         {
             var width = obj.GetInt("width", 200);
@@ -55,6 +74,12 @@ namespace Decagon.EE
             }
         }
 
+        /// <summary>
+        /// Unserializes the BigDB database world object.
+        /// </summary>
+        /// <param name="worlddata">The world data.</param>
+        /// <param name="width">The width of the world.</param>
+        /// <param name="height">The height of the world.</param>
         public static void UnserializeFromComplexObject(DatabaseArray worlddata,int width,int height)
         {
             Bitmap bmp;
@@ -108,6 +133,15 @@ namespace Decagon.EE
             Console.WriteLine("Saved image");
         }
 
+        /// <summary>
+        /// Initializes the color of a new bitmap.
+        /// </summary>
+        /// <param name="width">The width.</param>
+        /// <param name="height">The height.</param>
+        /// <param name="background">The background.</param>
+        /// <param name="bmp">The BMP reference.</param>
+        /// <param name="fp">The fast pixel reference.</param>
+        /// <param name="shouldLock">if set to <c>true</c> the image should be locked for editing.</param>
         private static void InitializeBitmapWithColor(int width, int height, Color background, out Bitmap bmp, out FastPixel fp, bool shouldLock = true)
         {
             bmp = new Bitmap(width, height);
@@ -123,6 +157,11 @@ namespace Decagon.EE
             }
         }
 
+        /// <summary>
+        /// Handles all incoming PlayerIO messages
+        /// </summary>
+        /// <param name="sender">The sender.</param>
+        /// <param name="e">The message.</param>
         static void Connection_OnMessage(object sender, Message e)
         {
             switch (e.Type)
@@ -158,6 +197,9 @@ namespace Decagon.EE
             }
         }
 
+        /// <summary>
+        /// Compresses PNG files.
+        /// </summary>
         private static void pngCompressor()
         {
             var quantizer = new WuQuantizer();
