@@ -5,11 +5,10 @@ using System.IO;
 using System.Linq;
 using System.Xml.Serialization;
 
-namespace Yonom.EE
+namespace Decagon.EE
 {
-    internal class Acorn
+    public class Acorn
     {
-        private static Dictionary<string, Color> blockDict;
 
         public static Dictionary<string,Color> LoadBlocks()
         {
@@ -41,17 +40,12 @@ namespace Yonom.EE
                 blockColors.Add(UIntToColor(Convert.ToUInt32(tokens[1])));
             }
 
-            blockDict = blockIDs.Zip(blockColors, (s, i) => new { s, i })
+            Dictionary<string,Color> blockDict = blockIDs.Zip(blockColors, (s, i) => new { s, i })
                           .ToDictionary(item => item.s, item => item.i);
 
-            XmlSerializer serializer = new XmlSerializer(typeof(item[]),
-                                 new XmlRootAttribute() { ElementName = "items" });
-            using (StreamWriter stream = File.CreateText("blocks.acorn"))
-            {
-                serializer.Serialize(stream,
-              blockDict.Select(kv => new item() { id = kv.Key, value = kv.Value }).ToArray());
-
-            }
+            System.IO.StreamWriter file = new System.IO.StreamWriter("blocks.acorn");
+            file.Write(Newtonsoft.Json.JsonConvert.SerializeObject(blockDict));
+            file.Close();
 
             return blockDict;
         }

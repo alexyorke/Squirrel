@@ -87,6 +87,8 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Acorn.cs" />
+    <Compile Include="Config.cs" />
     <Compile Include="FastPixel.cs" />
     <Compile Include="InitParse.cs" />
     <Compile Include="Program.cs" />

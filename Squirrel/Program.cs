@@ -2,33 +2,23 @@
 using System.Threading;
 using Rabbit;
 using System.Drawing;
-namespace Yonom.EE
+namespace Decagon.EE
 {
     using System;
     using System.Collections.Generic;
     using System.Diagnostics;
-    using System.IO;
-    using System.Linq;
     using System.Xml.Serialization;
-    public class item
-    {
-        [XmlAttribute]
-        public string id;
-        [XmlAttribute]
-        public Color value;
-    }
     class Program
     {
         static Stopwatch stopwatch = new Stopwatch();
         static Connection globalConn = null;
-        static string[] blocks;
 
-        public static Dictionary<string, Color> blockDict { get; private set; }
+        public static Dictionary<string, Color> blockDict = new Dictionary<string, Color>();
         static string worldID = "PWUzNk3PZ4bkI";
         static void Main(string[] args)
         {
             // Load the blocks into memory
-            var blockDict = Acorn.LoadBlocks();
+            blockDict = Acorn.LoadBlocks();
 
             // Log on
             Client conn = new RabbitAuth().LogOn("everybody-edits-su9rn58o40itdbnw69plyw", Config.Email, Config.Password);
@@ -85,7 +75,8 @@ namespace Yonom.EE
                     var nx = (xs[b] << 8) + xs[b + 1];
                     var ny = (ys[b] << 8) + ys[b + 1];
 
-                    Color c;
+                    Color c = new Color();
+
                     blockDict.TryGetValue(Convert.ToString(type), out c);
 
                     if (layerNum == 0)
