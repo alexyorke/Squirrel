@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
 using PlayerIOClient;
-using System.Drawing;
 
 namespace Decagon.EE
 {
@@ -53,10 +52,10 @@ namespace Decagon.EE
 
         public DataChunk(int layer, uint type, byte[] xs, byte[] ys, object[] args)
         {
-            this.Layer = layer;
-            this.Type = type;
-            this.Args = args;
-            this.Locations = GetLocations(xs, ys);
+            Layer = layer;
+            Type = type;
+            Args = args;
+            Locations = GetLocations(xs, ys);
         }
 
         private static Point[] GetLocations(byte[] xs, byte[] ys)
@@ -77,8 +76,8 @@ namespace Decagon.EE
 
         public Point(int x, int y) : this()
         {
-            this.X = x;
-            this.Y = y;
+            X = x;
+            Y = y;
         }
     }
 }

@@ -9,14 +9,14 @@ namespace Decagon.EE
     using System.Collections.Generic;
     using System.Diagnostics;
     using System.Drawing.Imaging;
-    using System.Xml.Serialization;
     class Program
     {
         static Stopwatch stopwatch = new Stopwatch();
+        static Stopwatch wasted_seconds = new Stopwatch();
         static Connection globalConn = null;
 
         public static Dictionary<string, Color> blockDict = new Dictionary<string, Color>();
-        static string worldID = "PWUzNk3PZ4bkI";
+        static string worldID = "PW5WNPqd3ia0I";
 
         static void Main(string[] args)
         {
@@ -57,14 +57,12 @@ namespace Decagon.EE
 
         public static void UnserializeFromComplexObject(DatabaseArray worlddata,int width,int height)
         {
-            Bitmap bmp = new Bitmap(width, height);
-            var gr = Graphics.FromImage(bmp);
-            gr.Clear(Color.Black); // empty blocks (null) are black
-            gr.DrawImage(bmp, new Rectangle(0, 0, bmp.Width, bmp.Height));
+            Bitmap bmp;
+            FastPixel fp;
+            InitializeBitmapWithColor(width, height, Color.Black, out bmp, out fp, true);
+            
 
-            FastPixel fp = new FastPixel(bmp);
-            fp.Lock();
-            List<Tuple<int,int,Color>> rewrittenBlocks = new List<Tuple<int,int,Color>>();
+            List<Tuple<int, int, Color>> rewrittenBlocks = new List<Tuple<int, int, Color>>();
             foreach (DatabaseObject ct in worlddata)
             {
                 if (ct.Count == 0) continue;
@@ -85,27 +83,44 @@ namespace Decagon.EE
                     if (layerNum == 0)
                     {
                         // background block
-                        Tuple<int, int, Color> tuple =
-                                new Tuple<int, int, Color>(nx,ny, Color.FromArgb(255, c.R, c.G, c.B));
-                        rewrittenBlocks.Add(tuple);
+                        rewrittenBlocks.Add(new Tuple<int, int, Color>(nx, ny, Color.FromArgb(255, c.R, c.G, c.B)));
                     }
-                    fp.SetPixel(Convert.ToInt32(nx), Convert.ToInt32(ny), Color.FromArgb(255, c.R, c.G, c.B));
 
+                    fp.SetPixel(Convert.ToInt32(nx), Convert.ToInt32(ny), Color.FromArgb(255, c.R, c.G, c.B));
                 }
             }
 
             // have to rewrite foreground blocks because they may have been written before
             // the background blocks were.
-	        foreach (var element in rewrittenBlocks)
-	        {
+
+
+            wasted_seconds.Start();
+            foreach (var element in rewrittenBlocks)
+            {
                 fp.SetPixel(Convert.ToInt32(element.Item1), Convert.ToInt32(element.Item2), element.Item3);
             }
 
-            Console.WriteLine("unlocked image");
+            wasted_seconds.Stop();
+
             fp.Unlock(true);
-            
+
             bmp.Save(worldID + "_bigdb.png");
             Console.WriteLine("Saved image");
+        }
+
+        private static void InitializeBitmapWithColor(int width, int height, Color background, out Bitmap bmp, out FastPixel fp, bool shouldLock = true)
+        {
+            bmp = new Bitmap(width, height);
+            var gr = Graphics.FromImage(bmp);
+            gr.Clear(background); // empty blocks (null) are black
+            gr.DrawImage(bmp, new Rectangle(0, 0, bmp.Width, bmp.Height));
+
+            fp = new FastPixel(bmp);
+
+            if (shouldLock)
+            {
+                fp.Lock();
+            }
         }
 
         static void Connection_OnMessage(object sender, Message e)
@@ -114,20 +129,11 @@ namespace Decagon.EE
             {
                 case "init":
                     globalConn.Disconnect(); // already have init data; don't need to be connected
-                    
-                    int width = e.GetInt(15), height = e.GetInt(16);
 
-                    //bitmap
-                    Bitmap bmp = new Bitmap(width, height);
-                    var gr = Graphics.FromImage(bmp);
-                    gr.Clear(Color.Black); // empty blocks (null) are black
-                    gr.DrawImage(bmp, new Rectangle(0, 0, bmp.Width, bmp.Height));
+                    Bitmap bmp;
+                    FastPixel fp;
+                    InitializeBitmapWithColor(e.GetInt(15), e.GetInt(16), Color.Black, out bmp, out fp);
 
-                    FastPixel fp = new FastPixel(bmp);
-                    fp.Lock();
-
-                    var roomData = new uint[2, e.GetInt(15), e.GetInt(16)];
-                    
                     var chunks = InitParse.Parse(e);
                     foreach (var chunk in chunks)
                     {
@@ -141,21 +147,26 @@ namespace Decagon.EE
                     }
 
                     fp.Unlock(true);
-                    bmp.Save(worldID+".png");
-
-                    var quantizer = new WuQuantizer();
-                    using (var bitmap = new Bitmap(worldID+".png"))
-                    {
-                        using (var quantized = quantizer.QuantizeImage(bitmap, 0, 0))
-                        {
-                            quantized.Save(worldID+"_nquant.png",ImageFormat.Png);
-                        }
-                    }
+                    bmp.Save(worldID + ".png");
+                    pngCompressor();
 
                     stopwatch.Stop();
 
-                    Console.WriteLine("Elapsed: " + stopwatch.ElapsedMilliseconds);
+                    Console.WriteLine("Elapsed: " + stopwatch.ElapsedMilliseconds + "ms");
+                    Console.WriteLine("Wasted time: " + wasted_seconds.ElapsedMilliseconds + "ms");
                     break;
+            }
+        }
+
+        private static void pngCompressor()
+        {
+            var quantizer = new WuQuantizer();
+            using (var bitmap = new Bitmap(worldID + ".png"))
+            {
+                using (var quantized = quantizer.QuantizeImage(bitmap, 0, 0))
+                {
+                    quantized.Save(worldID + "_nquant.png", ImageFormat.Png);
+                }
             }
         }
     }
