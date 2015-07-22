@@ -105,7 +105,7 @@ namespace Decagon.EE
 
                     blockDict.TryGetValue(Convert.ToString(type), out c);
 
-                    if (layerNum == 0)
+                    if (layerNum == 1)
                     {
                         // background block
                         rewrittenBlocks.Add(new Tuple<int, int, Color>(nx, ny, Color.FromArgb(255, c.R, c.G, c.B)));
@@ -172,6 +172,7 @@ namespace Decagon.EE
                     Bitmap bmp;
                     FastPixel fp;
                     InitializeBitmapWithColor(e.GetInt(15), e.GetInt(16), Color.Black, out bmp, out fp);
+                    List<Tuple<int, int, Color>> rewrittenBlocks = new List<Tuple<int, int, Color>>();
 
                     var chunks = InitParse.Parse(e);
                     foreach (var chunk in chunks)
@@ -179,11 +180,24 @@ namespace Decagon.EE
                         foreach (var pos in chunk.Locations)
                         {
                             Color c;
-
                             blockDict.TryGetValue(Convert.ToString(chunk.Type), out c);
+                            if (chunk.Layer == 1)
+                            {
+                                // background block
+                                rewrittenBlocks.Add(new Tuple<int, int, Color>(pos.X, pos.Y, Color.FromArgb(255, c.R, c.G, c.B)));
+                            }
+                            
                             fp.SetPixel(pos.X, pos.Y, Color.FromArgb(255, c.R, c.G, c.B));
                         }
                     }
+
+                    wasted_seconds.Start();
+                    foreach (var element in rewrittenBlocks)
+                    {
+                        fp.SetPixel(Convert.ToInt32(element.Item1), Convert.ToInt32(element.Item2), element.Item3);
+                    }
+
+                    wasted_seconds.Stop();
 
                     fp.Unlock(true);
                     bmp.Save(worldID + ".png");
