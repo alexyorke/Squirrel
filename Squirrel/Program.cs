@@ -101,31 +101,14 @@ namespace Decagon.EE
                     var nx = (xs[b] << 8) + xs[b + 1];
                     var ny = (ys[b] << 8) + ys[b + 1];
 
-                    Color c = new Color();
-
-                    blockDict.TryGetValue(Convert.ToString(type), out c);
-
-                    if (layerNum == 1)
-                    {
-                        // background block
-                        rewrittenBlocks.Add(new Tuple<int, int, Color>(nx, ny, Color.FromArgb(255, c.R, c.G, c.B)));
-                    }
-
-                    fp.SetPixel(Convert.ToInt32(nx), Convert.ToInt32(ny), Color.FromArgb(255, c.R, c.G, c.B));
+                    rewrittenBlocks.Add(drawBlock(fp, new DataChunk(layerNum, type, xs, ys, new object[0]), new Point(nx,ny)));
                 }
             }
 
             // have to rewrite foreground blocks because they may have been written before
             // the background blocks were.
 
-
-            wasted_seconds.Start();
-            foreach (var element in rewrittenBlocks)
-            {
-                fp.SetPixel(Convert.ToInt32(element.Item1), Convert.ToInt32(element.Item2), element.Item3);
-            }
-
-            wasted_seconds.Stop();
+            rewriteForegroundBlocks(fp, rewrittenBlocks);
 
             fp.Unlock(true);
 
@@ -179,25 +162,11 @@ namespace Decagon.EE
                     {
                         foreach (var pos in chunk.Locations)
                         {
-                            Color c;
-                            blockDict.TryGetValue(Convert.ToString(chunk.Type), out c);
-                            if (chunk.Layer == 1)
-                            {
-                                // background block
-                                rewrittenBlocks.Add(new Tuple<int, int, Color>(pos.X, pos.Y, Color.FromArgb(255, c.R, c.G, c.B)));
-                            }
-                            
-                            fp.SetPixel(pos.X, pos.Y, Color.FromArgb(255, c.R, c.G, c.B));
+                            rewrittenBlocks.Add(drawBlock(fp, chunk, pos));
                         }
                     }
 
-                    wasted_seconds.Start();
-                    foreach (var element in rewrittenBlocks)
-                    {
-                        fp.SetPixel(Convert.ToInt32(element.Item1), Convert.ToInt32(element.Item2), element.Item3);
-                    }
-
-                    wasted_seconds.Stop();
+                    rewriteForegroundBlocks(fp, rewrittenBlocks);
 
                     fp.Unlock(true);
                     bmp.Save(worldID + ".png");
@@ -209,6 +178,38 @@ namespace Decagon.EE
                     Console.WriteLine("Wasted time: " + wasted_seconds.ElapsedMilliseconds + "ms");
                     break;
             }
+        }
+
+        private static void rewriteForegroundBlocks(FastPixel fp, List<Tuple<int, int, Color>> rewrittenBlocks)
+        {
+            wasted_seconds.Start();
+            foreach (var element in rewrittenBlocks)
+            {
+                if (element != null)
+                {
+                    fp.SetPixel(Convert.ToInt32(element.Item1), Convert.ToInt32(element.Item2), element.Item3);
+                }
+            }
+            wasted_seconds.Stop();
+        }
+
+        private static Tuple<int, int, Color> drawBlock(FastPixel fp, DataChunk chunk, Point pos)
+        {
+            Color c;
+            Tuple<int, int, Color> rewrittenBlock_local = null;
+
+            blockDict.TryGetValue(Convert.ToString(chunk.Type), out c);
+            if (chunk.Layer == 1)
+            {
+                // background block
+                rewrittenBlock_local = new Tuple<int,int,Color>(pos.X, pos.Y, Color.FromArgb(255, c.R, c.G, c.B));
+            }
+
+            fp.SetPixel(pos.X, pos.Y, Color.FromArgb(255, c.R, c.G, c.B));
+
+            
+            // workaround to get reference to a tuple
+            return rewrittenBlock_local;
         }
 
         /// <summary>
