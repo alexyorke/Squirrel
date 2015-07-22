@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Drawing;
 
-namespace Yonom.EE
+namespace Decagon.EE
 {
     public class FastPixel
     {

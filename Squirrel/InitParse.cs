@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using PlayerIOClient;
 using System.Drawing;
 
-namespace Yonom.EE
+namespace Decagon.EE
 {
     public class BlockClass
     {
