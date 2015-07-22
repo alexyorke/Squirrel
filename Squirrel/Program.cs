@@ -4,9 +4,11 @@ using Rabbit;
 using System.Drawing;
 namespace Decagon.EE
 {
+    using nQuant;
     using System;
     using System.Collections.Generic;
     using System.Diagnostics;
+    using System.Drawing.Imaging;
     using System.Xml.Serialization;
     class Program
     {
@@ -15,6 +17,7 @@ namespace Decagon.EE
 
         public static Dictionary<string, Color> blockDict = new Dictionary<string, Color>();
         static string worldID = "PWUzNk3PZ4bkI";
+
         static void Main(string[] args)
         {
             // Load the blocks into memory
@@ -139,6 +142,16 @@ namespace Decagon.EE
 
                     fp.Unlock(true);
                     bmp.Save(worldID+".png");
+
+                    var quantizer = new WuQuantizer();
+                    using (var bitmap = new Bitmap(worldID+".png"))
+                    {
+                        using (var quantized = quantizer.QuantizeImage(bitmap, 0, 0))
+                        {
+                            quantized.Save(worldID+"_nquant.png",ImageFormat.Png);
+                        }
+                    }
+
                     stopwatch.Stop();
 
                     Console.WriteLine("Elapsed: " + stopwatch.ElapsedMilliseconds);
