@@ -1,15 +1,15 @@
 # Squirrel
-A tool to download the minimap of a Everybody Edits world quickly.
+A tool to download the minimap of an Everybody Edits world quickly.
 
 There are two ways to load the world data: (see `Program.cs`)
-- the initialization (`init`) data
-- use BigDB data (latest saved data)
+- the initialization (`init`) data (slower; latest data)
+- use BigDB data (faster; latest saved data)
  
-Minimaps are downloaded, compressed and saved as `[worldId].png`.
+Minimaps are downloaded, optionally compressed and saved as `[worldId].png`.
 
 ### Dependencies
 - nQuant
 - PlayerIOClient
 
 ### Included classes
-FastPixel: http://www.codeproject.com/Articles/15192/FastPixel-A-much-faster-alternative-to-Bitmap-SetP
+FastPixel: http://bit.ly/1OAMTNJ
