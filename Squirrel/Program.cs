@@ -10,10 +10,6 @@ namespace Decagon.EE
 	class Program
 	{
 		/// <summary>
-		/// The wasted_seconds
-		/// </summary>
-		static Stopwatch wasted_seconds = new Stopwatch();
-		/// <summary>
 		/// The global connection
 		/// </summary>
 		static Connection globalConn = null;
@@ -21,18 +17,22 @@ namespace Decagon.EE
 		/// <summary>
 		/// The world identifier
 		/// </summary>
-		static string worldID = "PWL2NjNOdhbEI";
+		static string worldID = "";
 
 		static bool LOAD_FROM_BIGDB = true;
 		static bool generating_minimap;
 
 		static void Main(string[] args)
 		{
+			// Measure variables
+			DateTime stamp_1, stamp_2;
+
 			// Log on
 			Client cli = PlayerIO.QuickConnect.SimpleConnect("everybody-edits-su9rn58o40itdbnw69plyw", Config.Email, Config.Password);
+			Console.Write("Connected, enter a worldID: ");
+			worldID = Console.ReadLine();
+			stamp_1 = DateTime.Now;
 
-			Console.WriteLine("Connected");
-			wasted_seconds.Start();
 			generating_minimap = true;
 			if (LOAD_FROM_BIGDB) {
 				DatabaseObject obj = cli.BigDB.Load("Worlds", worldID);
@@ -41,7 +41,8 @@ namespace Decagon.EE
 				else
 					Console.WriteLine("Error: Unknown WorldID");
 			} else {
-				cli.Multiplayer.JoinRoom(worldID, null, delegate(Connection connection) {
+				int version = cli.BigDB.Load("Config", "config").GetInt("version");
+				cli.Multiplayer.CreateJoinRoom(worldID, "Everybodyedits" + version, true, null, null, delegate(Connection connection) {
 					connection.OnMessage += Connection_OnMessage;
 					globalConn = connection;
 					connection.Send("init");
@@ -51,9 +52,9 @@ namespace Decagon.EE
 			while (generating_minimap)
 				Thread.Sleep(10);
 
-			wasted_seconds.Stop();
+			stamp_2 = DateTime.Now;
 
-			Console.WriteLine("Generated minimap in " + wasted_seconds.Elapsed.Milliseconds + " ms");
+			Console.WriteLine("Total time: " + (stamp_2 - stamp_1).TotalMilliseconds + " ms");
 			Console.WriteLine("Press any key to exit.");
 			Console.ReadKey(false);
 		}
@@ -66,8 +67,10 @@ namespace Decagon.EE
 		{
 			int width = obj.GetInt("width", 200);
 			int height = obj.GetInt("height", 200);
-			if (!obj.Contains("worlddata"))
+			if (!obj.Contains("worlddata")) {
 				Console.WriteLine("Error: No world data available");
+				return;
+			}
 
 			UnserializeFromComplexObject(obj.GetArray("worlddata"), width, height);
 		}
@@ -91,12 +94,12 @@ namespace Decagon.EE
 				if (ct.Count == 0) continue;
 				uint blockId = ct.GetUInt("type");
 				int layer = ct.GetInt("layer");
-				byte[] xs = ct.GetBytes("x");
-				byte[] ys = ct.GetBytes("y");
+				byte[] xs = ct.GetBytes("x"),
+					ys = ct.GetBytes("y");
 
 				for (var b = 0; b < xs.Length; b += 2) {
-					int nx = (xs[b] << 8) | xs[b + 1];
-					int ny = (ys[b] << 8) | ys[b + 1];
+					int nx = (xs[b] << 8) | xs[b + 1],
+						ny = (ys[b] << 8) | ys[b + 1];
 
 					minimap.drawBlock(layer, nx, ny, blockId);
 				}
@@ -119,6 +122,7 @@ namespace Decagon.EE
 			if (m.Type != "init")
 				return;
 
+			Console.WriteLine("Inited");
 			globalConn.Disconnect();
 
 			Minimap minimap = new Minimap();
@@ -126,22 +130,23 @@ namespace Decagon.EE
 			minimap.height = m.GetInt(16);
 
 			minimap.initialize();
-			
+
 			Console.WriteLine("Parsing init data...");
 
-			uint p = 18;
+			uint p = 22;
 			while (m[p] as string != "ws") p++;
 
+			p++;
 			// Parse world data
 			while (p < m.Count) {
 				uint blockId = m.GetUInt(p);
 				int layer = m.GetInt(p + 1);
-				byte[] ys = m.GetByteArray(p + 2);
-				byte[] xs = m.GetByteArray(p + 3);
+				byte[] xs = m.GetByteArray(p + 2),
+					ys = m.GetByteArray(p + 3);
 
 				for (var b = 0; b < xs.Length; b += 2) {
-					int nx = (xs[b] << 8) | xs[b + 1];
-					int ny = (ys[b] << 8) | ys[b + 1];
+					int nx = (xs[b] << 8) | xs[b + 1],
+						ny = (ys[b] << 8) | ys[b + 1];
 
 					minimap.drawBlock(layer, nx, ny, blockId);
 				}

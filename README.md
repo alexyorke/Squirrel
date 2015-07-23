@@ -1,14 +1,15 @@
 # Squirrel
-Quickly download minimaps to images from Everybody Edits.
+A tool to download the minimap of a Everybody Edits world quickly.
 
-To download a minimap, there are two options:
-- use the initialization data (the latest data available.) Requires authentication.
-- use BigDB data (latest data as of last save.) No authentication required.
+There are two ways to load the world data: (see `Program.cs`)
+- the initialization (`init`) data
+- use BigDB data (latest saved data)
  
-Minimaps are downloaded and converted into *.png files in about 1.5 seconds on an average connection, after the connection object has been initialized.
+Minimaps are downloaded, compressed and saved as `[worldId].png`.
 
-## Credits
+### Dependencies
+- nQuant
+- PlayerIOClient
 
-Yonom's InitParse: https://gist.github.com/Yonom/3c9ebfe69b1432452f9b
-
+### Included classes
 FastPixel: http://www.codeproject.com/Articles/15192/FastPixel-A-much-faster-alternative-to-Bitmap-SetP
