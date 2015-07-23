@@ -53,12 +53,18 @@ public class Minimap
 			foreground_cache[x, y] = new RawColor(c);
 	}
 
-	public void Save(string v)
+	public void Save(string v, bool shouldCompress = false)
 	{
 		stage.Unlock(true);
-		WuQuantizer quantizer = new WuQuantizer();
-		Image quantized = quantizer.QuantizeImage(bmp, 128, 0);
-		quantized.Save(v, System.Drawing.Imaging.ImageFormat.Png);
+        if (shouldCompress)
+        {
+            WuQuantizer quantizer = new WuQuantizer();
+            Image quantized = quantizer.QuantizeImage(bmp, 128, 0);
+            quantized.Save(v, System.Drawing.Imaging.ImageFormat.Png);
+        } else
+        {
+            bmp.Save(v, System.Drawing.Imaging.ImageFormat.Png);
+        }
 	}
 
 	public void rewriteForegroundBlocks()
