@@ -1,13 +1,12 @@
-﻿using PlayerIOClient;
+﻿using System;
 using System.Threading;
 using System.Drawing;
+using PlayerIOClient;
 
 namespace Decagon.EE
 {
-	using System;
 	using System.Collections.Generic;
 	using System.Diagnostics;
-	using System.Drawing.Imaging;
 	class Program
 	{
 		/// <summary>
@@ -29,32 +28,33 @@ namespace Decagon.EE
 
 		static void Main(string[] args)
 		{
-			wasted_seconds.Start();
 			// Log on
-			Client conn = PlayerIO.QuickConnect.SimpleConnect("everybody-edits-su9rn58o40itdbnw69plyw", Config.Email, Config.Password);
+			Client cli = PlayerIO.QuickConnect.SimpleConnect("everybody-edits-su9rn58o40itdbnw69plyw", Config.Email, Config.Password);
 
 			Console.WriteLine("Connected");
+			wasted_seconds.Start();
 			generating_minimap = true;
 			if (LOAD_FROM_BIGDB) {
-				DatabaseObject obj = conn.BigDB.Load("Worlds", worldID);
+				DatabaseObject obj = cli.BigDB.Load("Worlds", worldID);
 				if (obj.ExistsInDatabase)
 					FromDatabaseObject(obj);
 				else
 					Console.WriteLine("Error: Unknown WorldID");
 			} else {
-				conn.Multiplayer.JoinRoom(worldID, null, delegate(Connection connection) {
+				cli.Multiplayer.JoinRoom(worldID, null, delegate(Connection connection) {
 					connection.OnMessage += Connection_OnMessage;
 					globalConn = connection;
 					connection.Send("init");
 				});
 			}
 
-			while(generating_minimap)
+			while (generating_minimap)
 				Thread.Sleep(10);
 
 			wasted_seconds.Stop();
 
 			Console.WriteLine("Generated minimap in " + wasted_seconds.Elapsed.Milliseconds + " ms");
+			Console.WriteLine("Press any key to exit.");
 			Console.ReadKey(false);
 		}
 
@@ -64,8 +64,8 @@ namespace Decagon.EE
 		/// <param name="obj">The object.</param>
 		public static void FromDatabaseObject(DatabaseObject obj)
 		{
-			var width = obj.GetInt("width", 200);
-			var height = obj.GetInt("height", 200);
+			int width = obj.GetInt("width", 200);
+			int height = obj.GetInt("height", 200);
 			if (!obj.Contains("worlddata"))
 				Console.WriteLine("Error: No world data available");
 
@@ -87,7 +87,6 @@ namespace Decagon.EE
 
 			Console.WriteLine("Unserializing complex object...");
 
-			Color[,] foreground = new Color[width, height];
 			foreach (DatabaseObject ct in worlddata) {
 				if (ct.Count == 0) continue;
 				uint blockId = ct.GetUInt("type");
@@ -103,9 +102,7 @@ namespace Decagon.EE
 				}
 			}
 
-			// have to rewrite foreground blocks because they may have been written before
-			// the background blocks were.
-
+			// Write them "on top" of backgrounds
 			minimap.rewriteForegroundBlocks();
 
 			minimap.Save(worldID + "_bigdb.png");
@@ -129,6 +126,8 @@ namespace Decagon.EE
 			minimap.height = m.GetInt(16);
 
 			minimap.initialize();
+			
+			Console.WriteLine("Parsing init data...");
 
 			uint p = 18;
 			while (m[p] as string != "ws") p++;
@@ -152,7 +151,7 @@ namespace Decagon.EE
 				if (m[p] as string == "we")
 					break;
 
-				while (p < m.Count) {
+				while (p + 3 < m.Count) {
 					if (m[p + 2] is byte[])
 						break;
 					p++;

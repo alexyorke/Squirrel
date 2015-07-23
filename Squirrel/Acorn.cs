@@ -10,7 +10,6 @@ namespace Decagon.EE
 	/// </summary>
 	public class Acorn
 	{
-
 		/// <summary>
 		/// Loads the blocks.
 		/// </summary>
@@ -71,6 +70,24 @@ namespace Decagon.EE
 			if (remove_alpha)
 				a = a > 128 ? 0xFF : 0;
 			return Color.FromArgb(a, r, g, b);
+		}
+	}
+
+	/// <summary>
+	/// This class only contains bytes R, G and B
+	/// </summary>
+	public class RawColor
+	{
+		public byte R, G, B;
+		public RawColor(Color c)
+		{
+			R = c.R;
+			G = c.G;
+			B = c.B;
+		}
+		public Color ToColor()
+		{
+			return Color.FromArgb(0xFF, R, G, B);
 		}
 	}
 }

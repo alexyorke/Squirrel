@@ -12,7 +12,7 @@ public class Minimap
 	public int height { get; internal set; }
 	public int width { get; internal set; }
 	public Dictionary<string, Color> blockDict;
-	public Color[,] foreground_cache;
+	public RawColor[,] foreground_cache;
 
 	public Minimap()
 	{
@@ -22,7 +22,7 @@ public class Minimap
 	public void initialize()
 	{
 		blockDict = Acorn.LoadBlocks();
-		foreground_cache = new Color[width, height];
+		foreground_cache = new RawColor[width, height];
 
 		bmp = new Bitmap(width, height);
 		Graphics gr = Graphics.FromImage(bmp);
@@ -40,13 +40,17 @@ public class Minimap
 			// Unknown blockId: skip
 			return;
 		}
+		/*if (c.R > 200 && c.G > 200 && c.B > 200) {
+			Console.WriteLine("B: " + line[1] + "\t C: " + c.A + "," + c.R + "," + c.G + "," + c.B);
+			System.Threading.Thread.Sleep(200);
+		}*/
 
 		if (layer == 1)
 			// Write backgrounds directly
 			stage.SetPixel(x, y, c);
 		else
-			// Cache foregrounds, when the alpha threshold is reached
-			foreground_cache[x, y] = c;
+			// Cache foregrounds
+			foreground_cache[x, y] = new RawColor(c);
 	}
 
 	public void Save(string v)
@@ -64,7 +68,7 @@ public class Minimap
 				if (foreground_cache[x, y] == null)
 					continue;
 
-				stage.SetPixel(x, y, foreground_cache[x, y]);
+				stage.SetPixel(x, y, foreground_cache[x, y].ToColor());
 			}
 		Console.WriteLine("Foreground blocks written");
 	}
