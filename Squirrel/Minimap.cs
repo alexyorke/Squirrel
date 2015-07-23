@@ -2,67 +2,74 @@
 using System;
 using System.Drawing;
 using System.Collections.Generic;
+using nQuant;
 
 public class Minimap
 {
-    private Bitmap bmp;
-    private FastPixel fp;
-    public Minimap()
+	private Bitmap bmp;
+	public FastPixel stage;
+
+	public int height { get; internal set; }
+	public int width { get; internal set; }
+	public Dictionary<string, Color> blockDict;
+	public RawColor[,] foreground_cache;
+
+	public Minimap()
 	{
-        
-    }
 
-    public void initialize()
-    {
-        bmp = new Bitmap(width, height);
-        var gr = Graphics.FromImage(bmp);
-        gr.Clear(Color.Black); // empty blocks (null) are black
-        gr.DrawImage(bmp, new Rectangle(0, 0, bmp.Width, bmp.Height));
+	}
 
-        fp = new FastPixel(bmp);
+	public void initialize()
+	{
+		blockDict = Acorn.LoadBlocks();
+		foreground_cache = new RawColor[width, height];
 
-        fp.Lock();
-    }
+		bmp = new Bitmap(width, height);
+		Graphics gr = Graphics.FromImage(bmp);
+		gr.Clear(Color.Black); // Set the empty color: black
+		gr.DrawImage(bmp, new Rectangle(0, 0, width, height));
 
-    public Tuple<int, int, Color> drawBlock(DataChunk chunk, Decagon.EE.Point pos)
-    {
-        Color c;
-        Tuple<int, int, Color> rewrittenBlock_local = null;
+		stage = new FastPixel(bmp);
+		stage.Lock();
+	}
 
-        blockDict.TryGetValue(Convert.ToString(chunk.Type), out c);
-        if (chunk.Layer == 1)
-        {
-            // background block
-            rewrittenBlock_local = new Tuple<int, int, Color>(pos.X, pos.Y, Color.FromArgb(255, c.R, c.G, c.B));
-        }
+	public void drawBlock(int layer, int x, int y, uint blockId)
+	{
+		Color c;
+		if (!blockDict.TryGetValue(blockId.ToString(), out c)) {
+			// Unknown blockId: skip
+			return;
+		}
+		/*if (c.R > 200 && c.G > 200 && c.B > 200) {
+			Console.WriteLine("B: " + line[1] + "\t C: " + c.A + "," + c.R + "," + c.G + "," + c.B);
+			System.Threading.Thread.Sleep(200);
+		}*/
 
-        fp.SetPixel(pos.X, pos.Y, Color.FromArgb(255, c.R, c.G, c.B));
+		if (layer == 1)
+			// Write backgrounds directly
+			stage.SetPixel(x, y, c);
+		else
+			// Cache foregrounds
+			foreground_cache[x, y] = new RawColor(c);
+	}
 
+	public void Save(string v)
+	{
+		stage.Unlock(true);
+		WuQuantizer quantizer = new WuQuantizer();
+		Image quantized = quantizer.QuantizeImage(bmp, 128, 0);
+		quantized.Save(v, System.Drawing.Imaging.ImageFormat.Png);
+	}
 
-        // workaround to get reference to a tuple
-        return rewrittenBlock_local;
-    }
+	public void rewriteForegroundBlocks()
+	{
+		for (int y = 0; y < height; y++)
+			for (int x = 0; x < width; x++) {
+				if (foreground_cache[x, y] == null)
+					continue;
 
-    public int height { get; internal set; }
-    public int width { get; internal set; }
-    public Dictionary<string, Color> blockDict = Acorn.LoadBlocks();
-
-    internal void Save(string v)
-    {
-        fp.Unlock(true);
-
-        bmp.Save(v);
-    }
-
-    public void rewriteForegroundBlocks(List<Tuple<int, int, Color>> rewrittenBlocks)
-    {
-        foreach (var element in rewrittenBlocks)
-        {
-            if (element != null)
-            {
-                fp.SetPixel(Convert.ToInt32(element.Item1), Convert.ToInt32(element.Item2), element.Item3);
-            }
-        }
-    }
-
+				stage.SetPixel(x, y, foreground_cache[x, y].ToColor());
+			}
+		Console.WriteLine("Foreground blocks written");
+	}
 }
