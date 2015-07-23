@@ -28,7 +28,7 @@ namespace Decagon.EE
 			DateTime stamp_1, stamp_2;
 
 			// Log on
-			Client cli = PlayerIO.QuickConnect.SimpleConnect("everybody-edits-su9rn58o40itdbnw69plyw", Config.Email, Config.Password);
+			Client cli = PlayerIO.QuickConnect.SimpleConnect("everybody-edits-su9rn58o40itdbnw69plyw", Config.Email, Config.Password, null);
 			Console.Write("Connected, enter a worldID: ");
 			worldID = Console.ReadLine();
 			stamp_1 = DateTime.Now;
