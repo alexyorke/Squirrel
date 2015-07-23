@@ -40,8 +40,7 @@ namespace Decagon.EE
 				else
 					Console.WriteLine("Error: Unknown WorldID");
 			} else {
-				int version = cli.BigDB.Load("Config", "config").GetInt("version");
-				cli.Multiplayer.CreateJoinRoom(worldID, "Everybodyedits" + version, true, null, null, delegate(Connection connection) {
+				cli.Multiplayer.JoinRoom(worldID, null, delegate(Connection connection) {
 					connection.OnMessage += Connection_OnMessage;
 					globalConn = connection;
 					connection.Send("init");
