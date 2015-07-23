@@ -20,9 +20,9 @@ namespace Decagon.EE
 		static string worldID = "";
 
 		static bool LOAD_FROM_BIGDB = true;
-		static bool generating_minimap;
+        private static ManualResetEvent generating_minimap = new ManualResetEvent(false);
 
-		static void Main(string[] args)
+        static void Main(string[] args)
 		{
 			// Measure variables
 			DateTime stamp_1, stamp_2;
@@ -30,10 +30,9 @@ namespace Decagon.EE
 			// Log on
 			Client cli = PlayerIO.QuickConnect.SimpleConnect("everybody-edits-su9rn58o40itdbnw69plyw", Config.Email, Config.Password, null);
 			Console.Write("Connected, enter a worldID: ");
-			worldID = Console.ReadLine();
+			//worldID = Console.ReadLine();
 			stamp_1 = DateTime.Now;
 
-			generating_minimap = true;
 			if (LOAD_FROM_BIGDB) {
 				DatabaseObject obj = cli.BigDB.Load("Worlds", worldID);
 				if (obj.ExistsInDatabase)
@@ -49,8 +48,7 @@ namespace Decagon.EE
 				});
 			}
 
-			while (generating_minimap)
-				Thread.Sleep(10);
+            generating_minimap.WaitOne(); // wait until minimap generation is finished
 
 			stamp_2 = DateTime.Now;
 
@@ -109,7 +107,7 @@ namespace Decagon.EE
 			minimap.rewriteForegroundBlocks();
 
 			minimap.Save(worldID + "_bigdb.png");
-			generating_minimap = false;
+            generating_minimap.Set();
 		}
 
 		/// <summary>
@@ -165,7 +163,7 @@ namespace Decagon.EE
 
 			minimap.rewriteForegroundBlocks();
 			minimap.Save(worldID + ".png");
-			generating_minimap = false;
+            generating_minimap.Set();
 		}
 	}
 }
