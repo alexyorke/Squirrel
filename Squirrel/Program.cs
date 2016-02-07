@@ -17,7 +17,7 @@ namespace Decagon.EE
 		/// <summary>
 		/// The world identifier
 		/// </summary>
-		static string worldID = "";
+		static string worldID = "PWnwS8Rypgb0I";
 
 		static bool LOAD_FROM_BIGDB = true;
         private static ManualResetEvent generating_minimap = new ManualResetEvent(false);
@@ -29,7 +29,7 @@ namespace Decagon.EE
 
 			// Log on
 			Client cli = PlayerIO.QuickConnect.SimpleConnect("everybody-edits-su9rn58o40itdbnw69plyw", Config.Email, Config.Password, null);
-			Console.Write("Connected, enter a worldID: ");
+			//Console.Write("Connected, enter a worldID: ");
 			//worldID = Console.ReadLine();
 			stamp_1 = DateTime.Now;
 
