@@ -24,32 +24,30 @@ namespace Decagon.EE
 			// if the acorn file does not exist...
 			string text = null;
 			using (var wc = new System.Net.WebClient())
-				text = wc.DownloadString("https://raw.githubusercontent.com/Tunous/EEBlocks/master/Colors.txt");
+				text = wc.DownloadString("https://raw.githubusercontent.com/EEJesse/EEBlocks/master/Colors.txt");
 
 			if (text == null)
 				throw new InvalidDataException("The blocks did not download correctly.");
 
-			if (!text.StartsWith("ID: 0 Mapcolor: "))
+			if (!text.StartsWith("ID: <block id> Mapcolor: <color id>"))
 				throw new InvalidDataException("The blocks are not in the correct format.");
 
 			text = text.Replace('\r', ' ');
-
+            text = text.Replace("ID: <block id> Mapcolor: <color id>", "");
 			Dictionary<string, Color> blockDict = new Dictionary<string, Color>();
 
 			string[] lines = text.Split('\n');
 			for (int i = 0; i < lines.Length; i++) {
-				if (lines[i].Length < 15)
+				if (lines[i].Length < 2)
 					continue;
 
-				string[] line = lines[i].Split(' ');
-				if (line.Length < 4 || line[0] != "ID:" || line[2] != "Mapcolor:")
-					throw new InvalidDataException("Incorrect block color format.");
+                string[] line = lines[i].Split(' ');
 
-				uint u32color = Convert.ToUInt32(line[3]);
-				if (u32color == 0)
-					continue;
+                uint u32color = Convert.ToUInt32(line[1]);
 
-				blockDict.Add(line[1], UIntToColor(u32color));
+                blockDict.Add(line[0], UIntToColor(u32color));
+                Console.WriteLine("Block " + line[0] + " is now " + UIntToColor(u32color));
+				
 			}
 
 			return blockDict;

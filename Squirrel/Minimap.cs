@@ -13,8 +13,8 @@ public class Minimap
 	public int width { get; internal set; }
 	public Dictionary<string, Color> blockDict;
 	public RawColor[,] foreground_cache;
-
-	public Minimap()
+    private WuQuantizer quantizer = new WuQuantizer();
+    public Minimap()
 	{
 
 	}
@@ -58,7 +58,6 @@ public class Minimap
 		stage.Unlock(true);
         if (shouldCompress)
         {
-            WuQuantizer quantizer = new WuQuantizer();
             Image quantized = quantizer.QuantizeImage(bmp, 128, 0);
             quantized.Save(v, System.Drawing.Imaging.ImageFormat.Png);
         } else
