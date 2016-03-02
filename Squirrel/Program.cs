@@ -69,7 +69,7 @@ namespace Decagon.EE
 				return;
 			}
 
-			UnserializeFromComplexObject(obj.GetArray("worlddata"), width, height);
+			UnserializeFromComplexObject(obj, width, height);
 		}
 
 		/// <summary>
@@ -78,7 +78,7 @@ namespace Decagon.EE
 		/// <param name="worlddata">The world data.</param>
 		/// <param name="width">The width of the world.</param>
 		/// <param name="height">The height of the world.</param>
-		public static void UnserializeFromComplexObject(DatabaseArray worlddata, int width, int height)
+		public static void UnserializeFromComplexObject(DatabaseObject input, int width, int height)
 		{
 			Minimap minimap = new Minimap();
 			minimap.width = width;
@@ -87,20 +87,39 @@ namespace Decagon.EE
 
 			Console.WriteLine("Unserializing complex object...");
 
-			foreach (DatabaseObject ct in worlddata) {
-				if (ct.Count == 0) continue;
-				uint blockId = ct.GetUInt("type");
-				int layer = ct.GetInt("layer");
-				byte[] xs = ct.GetBytes("x"),
-					ys = ct.GetBytes("y");
+            if (input.Contains("worlddata"))
+            {
+                foreach (DatabaseObject ct in input.GetArray("worlddata"))
+                {
+                    if (ct.Count == 0) continue;
+                    uint blockId = ct.GetUInt("type");
+                    int layer = ct.GetInt("layer");
 
-				for (var b = 0; b < xs.Length; b += 2) {
-					int nx = (xs[b] << 8) | xs[b + 1],
-						ny = (ys[b] << 8) | ys[b + 1];
+                    byte[] x = ct.GetBytes("x", new byte[0]), y = ct.GetBytes("y", new byte[0]),
+                           x1 = ct.GetBytes("x1", new byte[0]), y1 = ct.GetBytes("y1", new byte[0]);
+                    
+                    for (int j = 0; j < x1.Length; j++)
+                    {
+                        byte nx = x1[j];
+                        byte ny = y1[j];
 
-					minimap.drawBlock(layer, nx, ny, blockId);
-				}
-			}
+                        minimap.drawBlock(layer, nx, ny, blockId);
+                    }
+                    for (int k = 0; k < x.Length; k += 2)
+                    {
+                        uint nx2 = (uint)(((int)x[k] << 8) + (int)x[k + 1]);
+                        uint ny2 = (uint)(((int)y[k] << 8) + (int)y[k + 1]);
+
+                        minimap.drawBlock(layer, (int)nx2, (int)ny2, blockId);
+                    }
+                }
+            }
+            else if (input.Contains("world"))
+            {
+
+            }
+
+
 
 			// Write them "on top" of backgrounds
 			minimap.rewriteForegroundBlocks();
@@ -164,5 +183,11 @@ namespace Decagon.EE
 			minimap.Save(worldID + ".png");
             generating_minimap.Set();
 		}
-	}
+
+        private class Config
+        {
+            public static string Email { get; internal set; } = "guest";
+            public static string Password { get; internal set; } = "guest";
+        }
+    }
 }
