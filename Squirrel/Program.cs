@@ -9,21 +9,21 @@ namespace Decagon.EE
     using System.Diagnostics;
     using System.Threading.Tasks;
     class Program
-	{
-		/// <summary>
-		/// The global connection
-		/// </summary>
-		static Connection globalConn = null;
+    {
+        /// <summary>
+        /// The global connection
+        /// </summary>
+        static Connection globalConn = null;
 
-		/// <summary>
-		/// The world identifier
-		/// </summary>
-		static string worldID = "";
+        /// <summary>
+        /// The world identifier
+        /// </summary>
+        static string worldID = "";
 
-		static bool LOAD_FROM_BIGDB = true;
+        static bool LOAD_FROM_BIGDB = true;
 
         static void Main(string[] args)
-		{
+        {
             // Log on
             Client cli = PlayerIO.QuickConnect.SimpleConnect("everybody-edits-su9rn58o40itdbnw69plyw", Config.Email, Config.Password, null);
             if (worldID == string.Empty)
@@ -34,32 +34,28 @@ namespace Decagon.EE
             }
 
             var tasks = new List<Task>();
-            foreach (string arg in args)
-            {
-                tasks.Add(Task.Factory.StartNew(() =>
-                {
-                    if (LOAD_FROM_BIGDB)
-                    {
-                        string worldID = arg;
-                        DatabaseObject obj = cli.BigDB.Load("Worlds", arg);
-                        if (obj.ExistsInDatabase)
-                            FromDatabaseObject(obj, arg);
-                        else
-                            Console.WriteLine("Error: Unknown WorldID");
-                    }
-                    else {
-                        cli.Multiplayer.JoinRoom(worldID, null, delegate (Connection connection)
-                        {
-                            connection.OnMessage += Connection_OnMessage;
-                            globalConn = connection;
-                            connection.Send("init");
-                        });
-                    }
-                }));
 
+            if (LOAD_FROM_BIGDB)
+            {
+                DatabaseObject[] obj = cli.BigDB.LoadKeys("Worlds", args);
+                for (int i = 0; i < obj.Length; i++)
+                {
+                    if (obj[i].ExistsInDatabase)
+                        FromDatabaseObject(obj[i], args[i]);
+                    else
+                        Console.WriteLine("Error: Unknown WorldID");
+                }
+            }
+            else {
+                cli.Multiplayer.JoinRoom(worldID, null, delegate (Connection connection)
+                {
+                    connection.OnMessage += Connection_OnMessage;
+                    globalConn = connection;
+                    connection.Send("init");
+                });
             }
 
-                Task.WaitAll(tasks.ToArray());
+              
             if (worldID == null)
             {
                 Console.WriteLine("Press any key to exit.");
