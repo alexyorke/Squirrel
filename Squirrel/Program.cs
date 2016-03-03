@@ -5,9 +5,10 @@ using PlayerIOClient;
 
 namespace Decagon.EE
 {
-	using System.Collections.Generic;
-	using System.Diagnostics;
-	class Program
+    using System.Collections.Generic;
+    using System.Diagnostics;
+    using System.Threading.Tasks;
+    class Program
 	{
 		/// <summary>
 		/// The global connection
@@ -17,50 +18,60 @@ namespace Decagon.EE
 		/// <summary>
 		/// The world identifier
 		/// </summary>
-		static string worldID = "PWnwS8Rypgb0I";
+		static string worldID = "";
 
 		static bool LOAD_FROM_BIGDB = true;
-        private static ManualResetEvent generating_minimap = new ManualResetEvent(false);
 
         static void Main(string[] args)
 		{
-			// Measure variables
-			DateTime stamp_1, stamp_2;
+            // Log on
+            Client cli = PlayerIO.QuickConnect.SimpleConnect("everybody-edits-su9rn58o40itdbnw69plyw", Config.Email, Config.Password, null);
+            if (worldID == string.Empty)
+            {
+                Console.Write("Connected, enter a worldID: ");
+                worldID = Console.ReadLine();
+                args = new string[] { worldID };
+            }
 
-			// Log on
-			Client cli = PlayerIO.QuickConnect.SimpleConnect("everybody-edits-su9rn58o40itdbnw69plyw", Config.Email, Config.Password, null);
-			//Console.Write("Connected, enter a worldID: ");
-			//worldID = Console.ReadLine();
-			stamp_1 = DateTime.Now;
+            var tasks = new List<Task>();
+            for (int i = 0; i < args.Length; i++)
+            {
+                tasks.Add(Task.Factory.StartNew(() =>
+                {
+                    if (LOAD_FROM_BIGDB)
+                    {
+                        string worldID = args[i];
+                        DatabaseObject obj = cli.BigDB.Load("Worlds", args[i]);
+                        if (obj.ExistsInDatabase)
+                            FromDatabaseObject(obj, args[i]);
+                        else
+                            Console.WriteLine("Error: Unknown WorldID");
+                    }
+                    else {
+                        cli.Multiplayer.JoinRoom(worldID, null, delegate (Connection connection)
+                        {
+                            connection.OnMessage += Connection_OnMessage;
+                            globalConn = connection;
+                            connection.Send("init");
+                        });
+                    }
+                }));
 
-			if (LOAD_FROM_BIGDB) {
-				DatabaseObject obj = cli.BigDB.Load("Worlds", worldID);
-				if (obj.ExistsInDatabase)
-					FromDatabaseObject(obj);
-				else
-					Console.WriteLine("Error: Unknown WorldID");
-			} else {
-				cli.Multiplayer.JoinRoom(worldID, null, delegate(Connection connection) {
-					connection.OnMessage += Connection_OnMessage;
-					globalConn = connection;
-					connection.Send("init");
-				});
-			}
+                Task.WaitAll(tasks.ToArray());
+            }
 
-            generating_minimap.WaitOne(); // wait until minimap generation is finished
-
-			stamp_2 = DateTime.Now;
-
-			Console.WriteLine("Total time: " + (stamp_2 - stamp_1).TotalMilliseconds + " ms");
-			Console.WriteLine("Press any key to exit.");
-			Console.ReadKey(false);
+            if (worldID == null)
+            {
+                Console.WriteLine("Press any key to exit.");
+                Console.ReadKey(false);
+            }
 		}
 
 		/// <summary>
 		/// Extracts the world from the BigDB database.
 		/// </summary>
 		/// <param name="obj">The object.</param>
-		public static void FromDatabaseObject(DatabaseObject obj)
+		public static void FromDatabaseObject(DatabaseObject obj, string worldID)
 		{
 			int width = obj.GetInt("width", 200);
 			int height = obj.GetInt("height", 200);
@@ -69,7 +80,7 @@ namespace Decagon.EE
 				return;
 			}
 
-			UnserializeFromComplexObject(obj, width, height);
+			UnserializeFromComplexObject(obj, width, height, worldID);
 		}
 
 		/// <summary>
@@ -78,7 +89,7 @@ namespace Decagon.EE
 		/// <param name="worlddata">The world data.</param>
 		/// <param name="width">The width of the world.</param>
 		/// <param name="height">The height of the world.</param>
-		public static void UnserializeFromComplexObject(DatabaseObject input, int width, int height)
+		public static void UnserializeFromComplexObject(DatabaseObject input, int width, int height, string worldID)
 		{
 			Minimap minimap = new Minimap();
 			minimap.width = width;
@@ -93,7 +104,7 @@ namespace Decagon.EE
                 {
                     if (ct.Count == 0) continue;
                     uint blockId = ct.GetUInt("type");
-                    int layer = ct.GetInt("layer");
+                    int layer = ct.GetInt("layer", 0);
 
                     byte[] x = ct.GetBytes("x", new byte[0]), y = ct.GetBytes("y", new byte[0]),
                            x1 = ct.GetBytes("x1", new byte[0]), y1 = ct.GetBytes("y1", new byte[0]);
@@ -119,13 +130,10 @@ namespace Decagon.EE
 
             }
 
-
-
 			// Write them "on top" of backgrounds
 			minimap.rewriteForegroundBlocks();
 
 			minimap.Save(worldID + "_bigdb.png");
-            generating_minimap.Set();
 		}
 
 		/// <summary>
@@ -181,7 +189,6 @@ namespace Decagon.EE
 
 			minimap.rewriteForegroundBlocks();
 			minimap.Save(worldID + ".png");
-            generating_minimap.Set();
 		}
 
         private class Config

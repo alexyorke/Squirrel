@@ -53,8 +53,6 @@ namespace Decagon.EE
                 uint u32color = Convert.ToUInt32(line[1]);
 
                 blockDict.Add(line[0], UIntToColor(u32color));
-                Console.WriteLine("Block " + line[0] + " is now " + UIntToColor(u32color));
-				
 			}
 
 			return blockDict;
