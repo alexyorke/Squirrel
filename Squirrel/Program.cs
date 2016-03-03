@@ -6,7 +6,6 @@ using PlayerIOClient;
 namespace Decagon.EE
 {
     using System.Collections.Generic;
-    using System.Diagnostics;
     using System.Threading.Tasks;
     class Program
     {
@@ -33,18 +32,18 @@ namespace Decagon.EE
                 args = new string[] { worldID };
             }
 
-            var tasks = new List<Task>();
-
             if (LOAD_FROM_BIGDB)
             {
                 DatabaseObject[] obj = cli.BigDB.LoadKeys("Worlds", args);
-                for (int i = 0; i < obj.Length; i++)
+                int i = 0;
+                Parallel.ForEach(obj, world =>
                 {
-                    if (obj[i].ExistsInDatabase)
-                        FromDatabaseObject(obj[i], args[i]);
+                    if (world.ExistsInDatabase)
+                        FromDatabaseObject(world, world.Key);
                     else
                         Console.WriteLine("Error: Unknown WorldID");
-                }
+                    i++;
+                });
             }
             else {
                 cli.Multiplayer.JoinRoom(worldID, null, delegate (Connection connection)
@@ -55,7 +54,6 @@ namespace Decagon.EE
                 });
             }
 
-              
             if (worldID == null)
             {
                 Console.WriteLine("Press any key to exit.");
