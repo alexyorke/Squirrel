@@ -34,16 +34,16 @@ namespace Decagon.EE
             }
 
             var tasks = new List<Task>();
-            for (int i = 0; i < args.Length; i++)
+            foreach (string arg in args)
             {
                 tasks.Add(Task.Factory.StartNew(() =>
                 {
                     if (LOAD_FROM_BIGDB)
                     {
-                        string worldID = args[i];
-                        DatabaseObject obj = cli.BigDB.Load("Worlds", args[i]);
+                        string worldID = arg;
+                        DatabaseObject obj = cli.BigDB.Load("Worlds", arg);
                         if (obj.ExistsInDatabase)
-                            FromDatabaseObject(obj, args[i]);
+                            FromDatabaseObject(obj, arg);
                         else
                             Console.WriteLine("Error: Unknown WorldID");
                     }
@@ -57,9 +57,9 @@ namespace Decagon.EE
                     }
                 }));
 
-                Task.WaitAll(tasks.ToArray());
             }
 
+                Task.WaitAll(tasks.ToArray());
             if (worldID == null)
             {
                 Console.WriteLine("Press any key to exit.");
