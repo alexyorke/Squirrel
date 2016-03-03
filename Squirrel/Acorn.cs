@@ -23,8 +23,15 @@ namespace Decagon.EE
 		{
 			// if the acorn file does not exist...
 			string text = null;
-			using (var wc = new System.Net.WebClient())
-				text = wc.DownloadString("https://raw.githubusercontent.com/EEJesse/EEBlocks/master/Colors.txt");
+
+            if (!File.Exists("Colors.txt"))
+            {
+                using (var wc = new System.Net.WebClient())
+                    text = wc.DownloadString("https://raw.githubusercontent.com/EEJesse/EEBlocks/master/Colors.txt");
+            } else
+            {
+                text = File.ReadAllText("Colors.txt");
+            }
 
 			if (text == null)
 				throw new InvalidDataException("The blocks did not download correctly.");
