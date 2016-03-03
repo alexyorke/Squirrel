@@ -21,6 +21,8 @@ namespace Decagon.EE
 
         static bool LOAD_FROM_BIGDB = true;
 
+        static public readonly Dictionary<string, Color> blockDict = Acorn.LoadBlocks();
+
         static void Main(string[] args)
         {
             // Log on

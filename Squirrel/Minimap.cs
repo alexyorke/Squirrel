@@ -11,7 +11,6 @@ public class Minimap
 
 	public int height { get; internal set; }
 	public int width { get; internal set; }
-	public Dictionary<string, Color> blockDict;
 	public RawColor[,] foreground_cache;
     private WuQuantizer quantizer = new WuQuantizer();
     public Minimap()
@@ -21,7 +20,6 @@ public class Minimap
 
 	public void initialize()
 	{
-		blockDict = Acorn.LoadBlocks();
 		foreground_cache = new RawColor[width, height];
 
 		bmp = new Bitmap(width, height);
@@ -36,7 +34,7 @@ public class Minimap
 	public void drawBlock(int layer, int x, int y, uint blockId)
 	{
 		Color c;
-		if (!blockDict.TryGetValue(blockId.ToString(), out c)) {
+		if (!Program.blockDict.TryGetValue(blockId.ToString(), out c)) {
 			// Unknown blockId: skip
 			return;
 		}
