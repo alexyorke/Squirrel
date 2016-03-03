@@ -73,6 +73,5 @@ public class Minimap
 
 				stage.SetPixel(x, y, foreground_cache[x, y]);
 			}
-		Console.WriteLine("Foreground blocks written");
 	}
 }
