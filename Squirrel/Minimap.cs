@@ -11,7 +11,7 @@ public class Minimap
 
 	public int height { get; internal set; }
 	public int width { get; internal set; }
-	public RawColor[,] foreground_cache;
+	public Color[,] foreground_cache;
     private WuQuantizer quantizer = new WuQuantizer();
     public Minimap()
 	{
@@ -20,7 +20,7 @@ public class Minimap
 
 	public void initialize()
 	{
-		foreground_cache = new RawColor[width, height];
+		foreground_cache = new Color[width, height];
 
 		bmp = new Bitmap(width, height);
 		Graphics gr = Graphics.FromImage(bmp);
@@ -48,7 +48,7 @@ public class Minimap
 			stage.SetPixel(x, y, c);
 		else
 			// Cache foregrounds
-			foreground_cache[x, y] = new RawColor(c);
+			foreground_cache[x, y] = Color.FromArgb(0xFF, c.R, c.G, c.B); 
 	}
 
 	public void Save(string v, bool shouldCompress = false)
@@ -71,7 +71,7 @@ public class Minimap
 				if (foreground_cache[x, y] == null)
 					continue;
 
-				stage.SetPixel(x, y, foreground_cache[x, y].ToColor());
+				stage.SetPixel(x, y, foreground_cache[x, y]);
 			}
 		Console.WriteLine("Foreground blocks written");
 	}
