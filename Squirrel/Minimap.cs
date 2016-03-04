@@ -24,7 +24,7 @@ public class Minimap
         bmp = new Bitmap(width, height);
         Graphics gr = Graphics.FromImage(bmp);
 		gr.Clear(Color.Black); // Set the empty color: black
-		gr.DrawImage(bmp, new Rectangle(0, 0, width, height));
+		//gr.DrawImage(bmp, new Rectangle(0, 0, width, height));
 
 		stage = new FastPixel(bmp);
 		stage.Lock();
@@ -47,7 +47,10 @@ public class Minimap
             stage.SetPixel(x, y, c);
         else
             // Cache foregrounds
-            foreground_cache[x, y] = new byte[] { 0xFF, c[2], c[1], c[0] };
+            if (!(c[2] == 0x0 || c[1] == 0x0 || c[0] == 0x0))
+        {
+            foreground_cache[x, y] = new byte[] { 0x0 , c[2], c[1], c[0] };
+        }
 	}
 
 	public void Save(string v, bool shouldCompress = false)
