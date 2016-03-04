@@ -49,7 +49,7 @@ public class Minimap
             // Cache foregrounds
             if (!(c[2] == 0x0 || c[1] == 0x0 || c[0] == 0x0))
         {
-            foreground_cache[x, y] = new byte[] { 0x0 , c[2], c[1], c[0] };
+            foreground_cache[x, y] = new byte[] { c[0], c[1], c[2], c[3] };
         }
 	}
 
