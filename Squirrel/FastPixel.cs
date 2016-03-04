@@ -110,11 +110,11 @@ namespace Decagon.EE
                 }
             }
         }
-        public void SetPixel(Point location, Color colour)
+        public void SetPixel(Point location, byte[] colour)
         {
             SetPixel(location.X, location.Y, colour);
         }
-        public void SetPixel(int x, int y, Color colour)
+        public void SetPixel(int x, int y, byte[] colour)
         {
             if (!locked)
             {
@@ -124,17 +124,17 @@ namespace Decagon.EE
             if (IsAlphaBitmap)
             {
                 int index = ((y * Width + x) * 4);
-                rgbValues[index] = colour.B;
-                rgbValues[index + 1] = colour.G;
-                rgbValues[index + 2] = colour.R;
-                rgbValues[index + 3] = colour.A;
+                rgbValues[index] = colour[0];
+                rgbValues[index + 1] = colour[1];
+                rgbValues[index + 2] = colour[2];
+                rgbValues[index + 3] = colour[3];
             }
             else
             {
                 int index = ((y * Width + x) * 3);
-                rgbValues[index] = colour.B;
-                rgbValues[index + 1] = colour.G;
-                rgbValues[index + 2] = colour.R;
+                rgbValues[index] = colour[0];
+                rgbValues[index + 1] = colour[1];
+                rgbValues[index + 2] = colour[2];
             }
         }
         public Color GetPixel(Point location)

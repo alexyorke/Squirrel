@@ -21,7 +21,7 @@ namespace Decagon.EE
 
         static bool LOAD_FROM_BIGDB = true;
 
-        static public readonly Dictionary<string, Color> blockDict = Acorn.LoadBlocks();
+        static public readonly Dictionary<uint, byte[]> blockDict = Acorn.LoadBlocks();
 
         static void Main(string[] args)
         {
@@ -91,8 +91,6 @@ namespace Decagon.EE
 			minimap.width = width;
 			minimap.height = height;
 			minimap.initialize();
-
-			Console.WriteLine("Unserializing complex object...");
 
             if (input.Contains("worlddata"))
             {

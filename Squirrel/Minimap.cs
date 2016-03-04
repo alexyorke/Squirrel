@@ -11,7 +11,7 @@ public class Minimap
 
 	public int height { get; internal set; }
 	public int width { get; internal set; }
-	public Color[,] foreground_cache;
+	public byte[,][] foreground_cache;
     private WuQuantizer quantizer = new WuQuantizer();
     public Minimap()
 	{
@@ -20,10 +20,9 @@ public class Minimap
 
 	public void initialize()
 	{
-		foreground_cache = new Color[width, height];
-
-		bmp = new Bitmap(width, height);
-		Graphics gr = Graphics.FromImage(bmp);
+        foreground_cache = new byte[width, height][];
+        bmp = new Bitmap(width, height);
+        Graphics gr = Graphics.FromImage(bmp);
 		gr.Clear(Color.Black); // Set the empty color: black
 		gr.DrawImage(bmp, new Rectangle(0, 0, width, height));
 
@@ -33,22 +32,22 @@ public class Minimap
 
 	public void drawBlock(int layer, int x, int y, uint blockId)
 	{
-		Color c;
-		if (!Program.blockDict.TryGetValue(blockId.ToString(), out c)) {
+		byte[] c;
+		if (!Program.blockDict.TryGetValue(blockId, out c)) {
 			// Unknown blockId: skip
 			return;
 		}
-		/*if (c.R > 200 && c.G > 200 && c.B > 200) {
+        /*if (c.R > 200 && c.G > 200 && c.B > 200) {
 			Console.WriteLine("B: " + line[1] + "\t C: " + c.A + "," + c.R + "," + c.G + "," + c.B);
 			System.Threading.Thread.Sleep(200);
 		}*/
 
-		if (layer == 1)
-			// Write backgrounds directly
-			stage.SetPixel(x, y, c);
-		else
-			// Cache foregrounds
-			foreground_cache[x, y] = Color.FromArgb(0xFF, c.R, c.G, c.B); 
+        if (layer == 1)
+            // Write backgrounds directly
+            stage.SetPixel(x, y, c);
+        else
+            // Cache foregrounds
+            foreground_cache[x, y] = new byte[] { 0xFF, c[2], c[1], c[0] };
 	}
 
 	public void Save(string v, bool shouldCompress = false)

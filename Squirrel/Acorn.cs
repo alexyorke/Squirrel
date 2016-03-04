@@ -19,7 +19,7 @@ namespace Decagon.EE
 		/// or
 		/// The blocks are not in the correct format.
 		/// </exception>
-		public static Dictionary<string, Color> LoadBlocks()
+		public static Dictionary<uint, byte[]> LoadBlocks()
 		{
 			// if the acorn file does not exist...
 			string text = null;
@@ -41,7 +41,7 @@ namespace Decagon.EE
 
 			text = text.Replace('\r', ' ');
             text = text.Replace("ID: <block id> Mapcolor: <color id>", "");
-			Dictionary<string, Color> blockDict = new Dictionary<string, Color>();
+			Dictionary<uint, byte[]> blockDict = new Dictionary<uint, byte[]>();
 
 			string[] lines = text.Split('\n');
 			for (int i = 0; i < lines.Length; i++) {
@@ -52,7 +52,7 @@ namespace Decagon.EE
 
                 uint u32color = Convert.ToUInt32(line[1]);
 
-                blockDict.Add(line[0], UIntToColor(u32color));
+                blockDict.Add(Convert.ToUInt32(line[0]), UIntToByte(u32color));
 			}
 
 			return blockDict;
@@ -63,16 +63,20 @@ namespace Decagon.EE
 		/// </summary>
 		/// <param name="color">The color.</param>
 		/// <returns>Color object</returns>
-		public static Color UIntToColor(uint color, bool remove_alpha = true)
+		public static byte[] UIntToByte(uint color, bool remove_alpha = true)
 		{
-			int a = (byte)(color >> 24),
-				r = (byte)(color >> 16),
-				g = (byte)(color >> 8),
-				b = (byte)(color >> 0);
+			byte a = (byte)(color >> 24),
+			r = (byte)(color >> 16),
+			g = (byte)(color >> 8),
+			b = (byte)(color >> 0);
 
-			if (remove_alpha)
-				a = a > 128 ? 0xFF : 0;
-			return Color.FromArgb(a, r, g, b);
+            int a_old = a;
+			int a_new = a_old > 128 ? 0xFF : 0;
+
+            a = (byte)a_new;
+
+            return new byte[] { b, g, r, a };
+            
 		}
 	}
 
