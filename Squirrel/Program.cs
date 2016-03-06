@@ -38,14 +38,12 @@ namespace Decagon.EE
             if (LOAD_FROM_BIGDB)
             {
                 DatabaseObject[] obj = cli.BigDB.LoadKeys("Worlds", args);
-                int i = 0;
                 Parallel.ForEach(obj, world =>
                 {
                     if (world.ExistsInDatabase)
                         FromDatabaseObject(world, world.Key);
                     else
                         Console.WriteLine("Error: Unknown WorldID");
-                    i++;
                 });
             }
             else {
