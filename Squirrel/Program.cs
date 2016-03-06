@@ -6,6 +6,7 @@ using PlayerIOClient;
 namespace Decagon.EE
 {
     using System.Collections.Generic;
+    using System.Linq;
     using System.Threading.Tasks;
     class Program
     {
@@ -94,7 +95,7 @@ namespace Decagon.EE
 
             if (input.Contains("worlddata"))
             {
-                foreach (DatabaseObject ct in input.GetArray("worlddata"))
+                foreach (DatabaseObject ct in input.GetArray("worlddata").Reverse())
                 {
                     if (ct.Count == 0) continue;
                     uint blockId = ct.GetUInt("type");
@@ -123,9 +124,6 @@ namespace Decagon.EE
             {
 
             }
-
-			// Write them "on top" of backgrounds
-			minimap.rewriteForegroundBlocks();
 
 			minimap.Save(worldID + "_bigdb.png");
 		}
@@ -181,7 +179,6 @@ namespace Decagon.EE
 				}
 			}
 
-			minimap.rewriteForegroundBlocks();
 			minimap.Save(worldID + ".png");
 		}
 

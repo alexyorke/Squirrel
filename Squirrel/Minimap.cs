@@ -11,7 +11,6 @@ public class Minimap
 
 	public int height { get; internal set; }
 	public int width { get; internal set; }
-	public byte[,][] foreground_cache;
     private WuQuantizer quantizer = new WuQuantizer();
     public Minimap()
 	{
@@ -20,7 +19,6 @@ public class Minimap
 
 	public void initialize()
 	{
-        foreground_cache = new byte[width, height][];
         bmp = new Bitmap(width, height);
         Graphics gr = Graphics.FromImage(bmp);
 		gr.Clear(Color.Black); // Set the empty color: black
@@ -37,20 +35,10 @@ public class Minimap
 			// Unknown blockId: skip
 			return;
 		}
-        /*if (c.R > 200 && c.G > 200 && c.B > 200) {
-			Console.WriteLine("B: " + line[1] + "\t C: " + c.A + "," + c.R + "," + c.G + "," + c.B);
-			System.Threading.Thread.Sleep(200);
-		}*/
 
-        if (layer == 1)
-            // Write backgrounds directly
+        // Skip blank blocks
+        if (!((c[0] == 0) && (c[1] == 0) && (c[2] == 0)))
             stage.SetPixel(x, y, c);
-        else
-            // Cache foregrounds
-            if (!(c[2] == 0x0 && c[1] == 0x0 && c[0] == 0x0))
-        {
-            foreground_cache[x, y] = new byte[] { c[0], c[1], c[2], c[3] };
-        }
 	}
 
 	public void Save(string v, bool shouldCompress = false)
@@ -64,16 +52,5 @@ public class Minimap
         {
             bmp.Save(v, System.Drawing.Imaging.ImageFormat.Png);
         }
-	}
-
-	public void rewriteForegroundBlocks()
-	{
-		for (int y = 0; y < height; y++)
-			for (int x = 0; x < width; x++) {
-				if (foreground_cache[x, y] == null)
-					continue;
-
-				stage.SetPixel(x, y, foreground_cache[x, y]);
-			}
 	}
 }
