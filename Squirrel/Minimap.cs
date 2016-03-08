@@ -1,8 +1,6 @@
 ﻿using Decagon.EE;
-using System;
-using System.Drawing;
-using System.Collections.Generic;
 using nQuant;
+using System.Drawing;
 
 public class Minimap
 {
@@ -41,12 +39,12 @@ public class Minimap
             stage.SetPixel(x, y, c);
 	}
 
-	public void Save(string v, bool shouldCompress = false)
+	public void Save(string v, Histogram histogram, bool shouldCompress = false)
 	{
 		stage.Unlock(true);
         if (shouldCompress)
         {
-            Image quantized = quantizer.QuantizeImage(bmp, 128, 0);
+            Image quantized = quantizer.QuantizeImage(bmp, 128, 0, histogram, 128);
             quantized.Save(v, System.Drawing.Imaging.ImageFormat.Png);
         } else
         {

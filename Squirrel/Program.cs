@@ -8,6 +8,8 @@ namespace Decagon.EE
     using System.Collections.Generic;
     using System.Linq;
     using System.Threading.Tasks;
+    using nQuant;
+
     class Program
     {
         /// <summary>
@@ -23,6 +25,7 @@ namespace Decagon.EE
         static bool LOAD_FROM_BIGDB = true;
 
         static public readonly Dictionary<uint, byte[]> blockDict = Acorn.LoadBlocks();
+        private static readonly Histogram histogram = new Histogram();
 
         static void Main(string[] args)
         {
@@ -123,7 +126,7 @@ namespace Decagon.EE
 
             }
 
-			minimap.Save(worldID + "_bigdb.png");
+			minimap.Save(worldID + "_bigdb.png", histogram);
 		}
 
 		/// <summary>
@@ -177,7 +180,7 @@ namespace Decagon.EE
 				}
 			}
 
-			minimap.Save(worldID + ".png");
+			minimap.Save(worldID + ".png", histogram);
 		}
 
         private class Config
