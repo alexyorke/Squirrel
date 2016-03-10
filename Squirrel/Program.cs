@@ -19,9 +19,21 @@ namespace Decagon.EE
             // Log on
             var cli = PlayerIO.QuickConnect.SimpleConnect("everybody-edits-su9rn58o40itdbnw69plyw", "guest",
                 "guest", null);
-            args = new[] {"zzxzxz", "PWlpzISupXb0I", "849$*&$*"};
 
+            List<string> filteredArgs = new List<string>();
             // filter keys
+            foreach (string arg in args)
+            {
+                if (arg.StartsWith("PW") || arg.StartsWith("BW"))
+                {
+                    if ((arg.Length > 1) && (arg.Length < 50))
+                    {
+
+                        filteredArgs.Add(arg);
+                    }
+                }
+            }
+            args = filteredArgs.ToArray();
 
             var obj = cli.BigDB.LoadKeys("Worlds", args);
             Parallel.ForEach(obj, world =>
