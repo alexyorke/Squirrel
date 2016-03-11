@@ -83,37 +83,6 @@ namespace Decagon.EE
             locked = false;
         }
 
-        public void Clear(Color colour)
-        {
-            if (!locked)
-            {
-                throw new Exception("Bitmap not locked.");
-            }
-
-            if (IsAlphaBitmap)
-            {
-                for (int index = 0; index <= rgbValues.Length - 1; index += 4)
-                {
-                    rgbValues[index] = colour.B;
-                    rgbValues[index + 1] = colour.G;
-                    rgbValues[index + 2] = colour.R;
-                    rgbValues[index + 3] = colour.A;
-                }
-            }
-            else
-            {
-                for (int index = 0; index <= rgbValues.Length - 1; index += 3)
-                {
-                    rgbValues[index] = colour.B;
-                    rgbValues[index + 1] = colour.G;
-                    rgbValues[index + 2] = colour.R;
-                }
-            }
-        }
-        public void SetPixel(Point location, byte[] colour)
-        {
-            SetPixel(location.X, location.Y, colour);
-        }
         public void SetPixel(int x, int y, byte[] colour)
         {
             if (!locked)
@@ -137,10 +106,7 @@ namespace Decagon.EE
                 rgbValues[index + 2] = colour[2];
             }
         }
-        public Color GetPixel(Point location)
-        {
-            return GetPixel(location.X, location.Y);
-        }
+
         public Color GetPixel(int x, int y)
         {
             if (!locked)
