@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Drawing;
 using System.IO;
 using System.Net;
 
@@ -79,26 +78,6 @@ namespace Decagon.EE
             a = (byte) a_new;
 
             return new[] {b, g, r, a};
-        }
-    }
-
-    /// <summary>
-    ///     This class only contains bytes R, G and B
-    /// </summary>
-    public class RawColor
-    {
-        public byte R, G, B;
-
-        public RawColor(Color c)
-        {
-            R = c.R;
-            G = c.G;
-            B = c.B;
-        }
-
-        public Color ToColor()
-        {
-            return Color.FromArgb(0xFF, R, G, B);
         }
     }
 }
