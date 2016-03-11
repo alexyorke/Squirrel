@@ -117,7 +117,7 @@ namespace Decagon.EE
             {
             }
 
-            minimap.Save(worldID + ".png");
+            minimap.Save($"{worldID.Substring(0, 2)}/{worldID.Substring(2, 1)}/{worldID.Substring(3, 1)}/{worldID}.png");
         }
     }
 }
