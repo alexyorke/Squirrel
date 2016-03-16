@@ -25,7 +25,6 @@ namespace Decagon.EE
         static bool LOAD_FROM_BIGDB = true;
 
         static public readonly Dictionary<uint, byte[]> blockDict = Acorn.LoadBlocks();
-        private static readonly Histogram histogram = new Histogram();
 
         static void Main(string[] args)
         {
@@ -126,7 +125,7 @@ namespace Decagon.EE
 
             }
 
-			minimap.Save(worldID + "_bigdb.png", histogram);
+			minimap.Save(worldID + "_bigdb.png");
 		}
 
 		/// <summary>
@@ -180,7 +179,7 @@ namespace Decagon.EE
 				}
 			}
 
-			minimap.Save(worldID + ".png", histogram);
+			minimap.Save(worldID + ".png");
 		}
 
         private class Config

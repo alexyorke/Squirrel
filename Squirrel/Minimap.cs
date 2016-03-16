@@ -39,12 +39,12 @@ public class Minimap
             stage.SetPixel(x, y, c);
 	}
 
-	public void Save(string v, Histogram histogram, bool shouldCompress = false)
+	public void Save(string v, bool shouldCompress = false)
 	{
 		stage.Unlock(true);
         if (shouldCompress)
         {
-            Image quantized = quantizer.QuantizeImage(bmp, 128, 0, histogram, 128);
+            Image quantized = quantizer.QuantizeImage(bmp, 128, 0);
             quantized.Save(v, System.Drawing.Imaging.ImageFormat.Png);
         } else
         {
